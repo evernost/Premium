@@ -1,0 +1,1397 @@
+Disassembly Listing for brain_core
+Generated From:
+C:/Users/Admin/Documents/Recherche/projet_prime/codes_source/brain_core.X/dist/default/debug/brain_core.X.debug.elf
+21 juil. 2018 16:27:55
+
+---  C:/Users/Admin/Documents/Recherche/projet_prime/codes_source/brain_core.X/brain_core/main.c  -------
+1:                 // =============================================================================
+2:                 // File         : main.c
+3:                 // Date         : 03/07/2018
+4:                 // Author       : Quentin
+5:                 // Version      : 01
+6:                 // Description  : Main source code for the brain core (dsPIC33EV256GM106)
+7:                 // =============================================================================
+8:                 
+9:                 // =============================================================================
+10:                // Pragmas
+11:                // =============================================================================
+12:                // FSEC
+13:                #pragma config BWRP = OFF               // Boot Segment Write-Protect Bit (Boot Segment may be written)
+14:                #pragma config BSS = DISABLED           // Boot Segment Code-Protect Level bits (No Protection (other than BWRP))
+15:                #pragma config BSS2 = OFF               // Boot Segment Control Bit (No Boot Segment)
+16:                #pragma config GWRP = OFF               // General Segment Write-Protect Bit (General Segment may be written)
+17:                #pragma config GSS = DISABLED           // General Segment Code-Protect Level bits (No Protection (other than GWRP))
+18:                #pragma config CWRP = OFF               // Configuration Segment Write-Protect Bit (Configuration Segment may be written)
+19:                #pragma config CSS = DISABLED           // Configuration Segment Code-Protect Level bits (No Protection (other than CWRP))
+20:                #pragma config AIVTDIS = DISABLE        // Alternate Interrupt Vector Table Disable Bit  (Disable Alternate Vector Table)
+21:                
+22:                // FBSLIM
+23:                #pragma config BSLIM = 0x1FFF           // Boot Segment Code Flash Page Address Limit Bits (Boot Segment Flash Page Address Limit (0-0x1FFF))
+24:                
+25:                // FOSCSEL
+26:                #pragma config FNOSC = FRC              // Initial oscillator Source Selection Bits (Internal Fast RC (FRC))
+27:                #pragma config IESO = OFF               // Two Speed Oscillator Start-Up Bit (Start up device with user selected oscillator source)
+28:                
+29:                // FOSC
+30:                #pragma config POSCMD = NONE            // Primary Oscillator Mode Select Bits (Primary Oscillator disabled)
+31:                #pragma config OSCIOFNC = ON            // OSC2 Pin I/O Function Enable Bit (OSC2 is general purpose digital I/O pin)
+32:                #pragma config IOL1WAY = ON             // Peripheral Pin Select Configuration Bit (Allow Only One reconfiguration)
+33:                #pragma config FCKSM = CSECMD           // Clock Switching Mode Bits (Clock Switching is enabled,Fail-safe Clock Monitor is disabled)
+34:                #pragma config PLLKEN = ON              // PLL Lock Enable Bit (Clock switch to PLL source will wait until the PLL lock signal is valid)
+35:                
+36:                // FWDT
+37:                #pragma config WDTPOST = PS32768        // Watchdog Timer Postscaler Bits (1:32,768)
+38:                #pragma config WDTPRE = PR128           // Watchdog Timer Prescaler Bit (1:128)
+39:                #pragma config FWDTEN = OFF             // Watchdog Timer Enable Bits (WDT and SWDTEN Disabled)
+40:                #pragma config WINDIS = OFF             // Watchdog Timer Window Enable Bit (Watchdog timer in Non-Window Mode)
+41:                #pragma config WDTWIN = WIN25           // Watchdog Window Select Bits (WDT Window is 25% of WDT period)
+42:                
+43:                // FPOR
+44:                #pragma config BOREN0 = ON              // Brown Out Reset Detection Bit (BOR is Enabled)
+45:                
+46:                // FICD
+47:                #pragma config ICS = PGD3               // ICD Communication Channel Select Bits (Communicate on PGEC3 and PGED3)
+48:                
+49:                // FDMTINTVL
+50:                #pragma config DMTIVTL = 0xFFFF         // Lower 16 Bits of 32 Bit DMT Window Interval (Lower 16 bits of 32 bit DMT window interval (0-0xFFFF))
+51:                
+52:                // FDMTINTVH
+53:                #pragma config DMTIVTH = 0xFFFF         // Upper 16 Bits of 32 Bit DMT Window Interval (Upper 16 bits of 32 bit DMT window interval (0-0xFFFF))
+54:                
+55:                // FDMTCNTL
+56:                #pragma config DMTCNTL = 0xFFFF         // Lower 16 Bits of 32 Bit DMT Instruction Count Time-Out Value (Lower 16 bits of 32 bit DMT instruction count time-out value (0-0xFFFF))
+57:                
+58:                // FDMTCNTH
+59:                #pragma config DMTCNTH = 0xFFFF         // Upper 16 Bits of 32 Bit DMT Instruction Count Time-Out Value (Upper 16 bits of 32 bit DMT instruction count time-out value (0-0xFFFF))
+60:                
+61:                // FDMT
+62:                #pragma config DMTEN = DISABLE          // Dead Man Timer Enable Bit (Dead Man Timer is Disabled and can be enabled by software)
+63:                
+64:                // FDEVOPT
+65:                #pragma config PWMLOCK = ON             // PWM Lock Enable Bit (Certain PWM registers may only be written after key sequence)
+66:                #pragma config ALTI2C1 = OFF            // Alternate I2C1 Pins Selection Bit (I2C1 mapped to SDA1/SCL1 pins)
+67:                
+68:                // FALTREG
+69:                #pragma config CTXT1 = NONE             // Interrupt Priority Level (IPL) Selection Bits For Alternate Working Register Set 1 (Not Assigned)
+70:                #pragma config CTXT2 = NONE             // Interrupt Priority Level (IPL) Selection Bits For Alternate Working Register Set 2 (Not Assigned)
+71:                
+72:                
+73:                // =============================================================================
+74:                // Includes
+75:                // =============================================================================
+76:                #include <xc.h>
+77:                #include "main.h"
+78:                #include "init.h"
+79:                
+80:                // =============================================================================
+81:                // Global variables
+82:                // =============================================================================
+83:                
+84:                // ---------
+85:                // Variables
+86:                // ---------
+87:                // This array is an image of the actual 7 segments display.
+88:                // display_array[0] is the lowest significant digit, display_array[8] the highest.
+89:                // The actual content of display_array will call the
+90:                uint8 display_array[9]  = {0,0,0,0,0,0,16,16,16};
+91:                uint8 DP_array[9]       = {0,1,0,0,0,0,0,0,0};
+92:                
+93:                // Keypad variables
+94:                volatile uint8 current_row   = 0;
+95:                volatile uint8 column_status = 0;
+96:                volatile uint8 keypad_change = 0;
+97:                
+98:                // ADC variables
+99:                uint8 ADC_update = 0;
+100:               
+101:               volatile uint8 debug_update = 0;
+102:               uint32 debug_counter = 0;
+103:               
+104:               // --------------
+105:               // Look-up tables
+106:               // --------------
+107:               uint8 seven_seg_LUT[SEVEN_SEG_LUT_SIZE] = 
+108:               {
+109:                 0x3F, // LUT[00] = 0
+110:                 0x06, // LUT[01] = 1
+111:                 0x5D, // LUT[02] = 2
+112:                 0x4F, // LUT[03] = 3
+113:                 0x66, // LUT[04] = 4
+114:                 0x6B, // LUT[05] = 5
+115:                 0x7B, // LUT[06] = 6
+116:                 0x0E, // LUT[07] = 7
+117:                 0x7F, // LUT[08] = 8
+118:                 0x6F, // LUT[09] = 9
+119:                 0x7E, // LUT[10] = A
+120:                 0x73, // LUT[11] = b
+121:                 0x51, // LUT[12] = c
+122:                 0x57, // LUT[13] = d
+123:                 0x79, // LUT[14] = E
+124:                 0x78, // LUT[15] = F
+125:                 0x00  // LUT[16] = blank
+126:               };
+127:               
+128:               uint16 temp_LUT[TEMP_LUT_SIZE] = 
+129:               {
+130:                 #include "temp_LUT.txt"
+131:               };
+132:               
+133:               // =============================================================================
+134:               // User functions
+135:               // =============================================================================
+136:               int main(void)
+137:               {    
+00096A  BE9F88     MOV.D W8, [W15++]
+00096C  BE9F8A     MOV.D W10, [W15++]
+00096E  781F8C     MOV W12, [W15++]
+138:                 // ---------------
+139:                 // Local variables
+140:                 // ---------------
+141:                 static uint8 digit_index = 0;
+142:                 static uint8 key_pressed = 0;
+143:               
+144:                 // --------
+145:                 // PIC init
+146:                 // --------
+147:                 clock_init();
+000970  07FEDB     RCALL clock_init
+148:                 IO_init();
+000972  07FEFF     RCALL IO_init
+149:                 timer1_init();
+000974  07FF15     RCALL timer1_init
+150:                 timer2_init();
+000976  07FF22     RCALL timer2_init
+151:                 timer3_init();
+000978  07FF2E     RCALL timer3_init
+152:                 timer4_init();
+00097A  07FF38     RCALL timer4_init
+153:                 //PWM_init();
+154:                 ADC_init();
+00097C  07FF62     RCALL ADC_init
+155:                 
+156:                 interrupts_init();
+00097E  07FF86     RCALL interrupts_init
+157:                 interrupts_enable();
+000980  07FFB3     RCALL interrupts_enable
+158:                 
+159:                 // Start a new ADC acquisition
+160:                 ADC_START = 1;
+000982  A82320     BSET AD1CON1, #1
+161:               
+162:                 GREEN_LED = 0;
+000984  A90E68     BCLR LATF, #0
+163:                 RED_LED   = 0;
+000986  A92E68     BCLR LATF, #1
+00098E  210538     MOV #0x1053, W8
+000990  784418     MOV.B [W8], W8
+000992  BFD05C     MOV.B key_pressed, WREG
+000994  2105D9     MOV #0x105D, W9
+000996  784499     MOV.B [W9], W9
+164:               
+165:                 // ---------
+166:                 // Main loop
+167:                 // ---------
+168:                 while(1)
+169:                 {
+170:                   // -----------------------------------------------------------------------------------
+171:                   // ADC handling
+172:                   // -----------------------------------------------------------------------------------
+173:                   if (ADC_update == 1)
+000998  544FE1     SUB.B W8, #0x1, [W15]
+00099A  3A0003     BRA NZ, .L26
+174:                   {
+175:                     uint16 ADC_result = 0;
+176:               
+177:                     // Note:
+178:                     // At this point, we assume the ADC conversion is done (T_timer_2 >> T_acq)
+179:                     // ADC_DONE should be 1 here, otherwise, send error message!!
+180:                     //DBG_LED_1 = ~ADC_DONE;
+181:               
+182:                     // Read result
+183:                     ADC_result = ADC1BUF0;
+00099C  801801     MOV ADC1BUF0, W1
+184:               
+185:                     if (ADC_result < 207)
+186:                     {
+187:                       ADC_result = 0;
+188:                     }
+189:                     else if (ADC_result > 786)
+190:                     {
+191:                       ADC_result = 579;
+192:                     }
+193:                     else
+194:                     {
+195:                       ADC_result = ADC_result - 207;
+196:                     }
+197:               
+198:                     ADC_result = temp_LUT[ADC_result];
+199:                     
+200:                     // Call conversion function
+201:                     //conv_BCD(ADC_result,display_array);
+202:               
+203:                     // Start a new acquisition
+204:                     ADC_START = 1;
+00099E  A82320     BSET AD1CON1, #1
+205:               
+206:                     // Close activity
+207:                     ADC_update = 0;
+000988  EB4600     CLR.B W12
+00098C  78450C     MOV.B W12, W10
+0009A0  78440A     MOV.B W10, W8
+208:                   }
+209:               
+210:                   
+211:                   // -----------------------------------------------------------------------------------
+212:                   // Keypad event handling
+213:                   // -----------------------------------------------------------------------------------
+214:                   if (keypad_change == 1)
+0009A2  210521     MOV #0x1052, W1
+0009A4  784091     MOV.B [W1], W1
+0009A6  50CFE1     SUB.B W1, #0x1, [W15]
+0009A8  3A0016     BRA NZ, .L27
+215:                   {
+216:                     RED_LED = ~RED_LED;
+0009AA  D50E68     LSR LATF, WREG
+0009AC  EA8000     COM W0, W0
+0009AE  600061     AND W0, #0x1, W0
+0009B0  400000     ADD W0, W0, W0
+0009B2  807341     MOV LATF, W1
+0009B4  A11001     BCLR W1, #1
+0009B6  700081     IOR W0, W1, W1
+0009B8  887341     MOV W1, LATF
+217:               
+218:                     key_pressed = keypad_decode(current_row,column_status);
+0009BA  210511     MOV #0x1051, W1
+0009BC  784091     MOV.B [W1], W1
+0009BE  BFD050     MOV.B current_row, WREG
+0009C0  07FF95     RCALL keypad_decode
+219:                     display_array[digit_index] = key_pressed;
+00098A  2105EB     MOV #0x105E, W11
+0009C2  FB8089     ZE W9, W1
+0009C4  458081     ADD W11, W1, W1
+0009C6  784880     MOV.B W0, [W1]
+220:               
+221:                     if (digit_index == 8)
+0009C8  54CFE8     SUB.B W9, #0x8, [W15]
+0009CA  320002     BRA Z, .L33
+222:                     {
+223:                       digit_index = 0;
+0009D0  78448A     MOV.B W10, W9
+224:                     }
+225:                     else
+226:                     {
+227:                       digit_index++;
+0009CC  E84489     INC.B W9, W9
+0009CE  370001     BRA .L28
+228:                     }
+229:                     
+230:                     // Close activity
+231:                     keypad_change = 0;
+0009D2  210521     MOV #0x1052, W1
+0009D4  78488A     MOV.B W10, [W1]
+232:                   }
+233:               
+234:               
+235:                   // -----------------------------------------------------------------------------------
+236:                   // Debug timer event handling
+237:                   // -----------------------------------------------------------------------------------
+238:                   if (debug_update == 1)
+0009D6  210541     MOV #0x1054, W1
+0009D8  784091     MOV.B [W1], W1
+0009DA  50CFE1     SUB.B W1, #0x1, [W15]
+0009DC  3AFFDD     BRA NZ, .L29
+0009DE  784088     MOV.B W8, W1
+0009E0  210533     MOV #0x1053, W3
+0009E2  784981     MOV.B W1, [W3]
+0009E4  B7F05C     MOV.B WREG, key_pressed
+0009E6  784189     MOV.B W9, W3
+0009E8  2105D2     MOV #0x105D, W2
+0009EA  784903     MOV.B W3, [W2]
+239:                   {
+240:                     if (debug_counter == 9999UL)
+0009EC  8082B0     MOV debug_counter, W0
+0009EE  8082C1     MOV 0x1058, W1
+0009F0  2270F2     MOV #0x270F, W2
+0009F2  200003     MOV #0x0, W3
+0009F4  500F82     SUB W0, W2, [W15]
+0009F6  588F83     SUBB W1, W3, [W15]
+0009F8  3A0003     BRA NZ, .L30
+241:                     {
+242:                       debug_counter = 0;
+0009FA  EF3056     CLR debug_counter
+0009FC  EF3058     CLR 0x1058
+0009FE  370004     BRA .L31
+243:                     }
+244:                     else
+245:                     {
+246:                       debug_counter++;
+000A00  400161     ADD W0, #0x1, W2
+000A02  4881E0     ADDC W1, #0x0, W3
+000A04  8882B2     MOV W2, debug_counter
+000A06  8882C3     MOV W3, 0x1058
+247:                     }
+248:                     
+249:                     // Show that!
+250:                     conv_BCD(debug_counter,display_array,1);
+000A08  B3C013     MOV.B #0x1, W3
+000A0A  78010B     MOV W11, W2
+000A0C  8082B0     MOV debug_counter, W0
+000A0E  8082C1     MOV 0x1058, W1
+000A10  07FF81     RCALL conv_BCD
+251:               
+252:                     // Close activity
+253:                     debug_update = 0;
+000A12  210543     MOV #0x1054, W3
+000A14  78498C     MOV.B W12, [W3]
+000A16  37FFBB     BRA .L32
+254:                   }
+255:               
+256:                   
+257:                 }
+258:               
+259:                 return(0);
+260:               }
+261:               
+262:               // =============================================================================
+263:               // Interrupts handling
+264:               // =============================================================================
+265:               
+266:               // Remark:
+267:               // To get the name of every interrupt vector, click on the icon (?) on the right
+268:               // named "Compiler help". Then click on "Interrupt Vector Tables Reference - HTML"
+269:               
+270:               // -------------------------------------------
+271:               // Timer 1 interrupt / Display MUXing (500 Hz)
+272:               // -------------------------------------------
+273:               void __attribute__ ((interrupt, no_auto_psv)) _T1Interrupt(void)
+274:               {      
+0002FA  BE9F80     MOV.D W0, [W15++]
+0002FC  781F82     MOV W2, [W15++]
+275:                 static uint8 display_index = 0;
+276:                 uint16 data_buffer = 0;
+277:               
+278:                 // Reset interrupt flag
+279:                 IFS0bits.T1IF = 0;
+0002FE  A96800     BCLR IFS0, #3
+280:                 
+281:                 // ------------------------
+282:                 // Update display procedure
+283:                 // ------------------------
+284:                 
+285:                 // Move the MUX position
+286:                 if (display_index == 9)
+000300  BFD05B     MOV.B display_index, WREG
+000302  504FE9     SUB.B W0, #0x9, [W15]
+000304  3A0002     BRA NZ, .L2
+287:                 {
+288:                   display_index = 0;
+000306  EF705B     CLR.B display_index
+000308  370002     BRA .L3
+289:                 }
+290:                 else
+291:                 {
+292:                   display_index++;
+00030A  E84000     INC.B W0, W0
+00030C  B7F05B     MOV.B WREG, display_index
+293:                 }
+294:               
+295:                 // Put data in the MUX
+296:                 LATE = (display_index << 12);
+00030E  BFD05B     MOV.B display_index, WREG
+000310  FB8000     ZE W0, W0
+000312  DD00CC     SL W0, #12, W1
+000314  8872A1     MOV W1, LATE
+297:               
+298:                 // Initialize data to be sent
+299:                 data_buffer = 0;
+00031C  EB0080     CLR W1
+300:                 if (display_array[display_index] < SEVEN_SEG_LUT_SIZE)
+000316  2105E1     MOV #0x105E, W1
+000318  408080     ADD W1, W0, W1
+00031A  784111     MOV.B [W1], W2
+00031E  514FF0     SUB.B W2, #0x10, [W15]
+000320  3E0004     BRA GTU, .L4
+301:                 {
+302:                   data_buffer = data_buffer | seven_seg_LUT[display_array[display_index]];
+000322  FB8102     ZE W2, W2
+000324  210701     MOV #0x1070, W1
+000326  408102     ADD W1, W2, W2
+000328  FB8092     ZE [W2], W1
+303:                 }
+304:               
+305:                 // Add decimal point data
+306:                 data_buffer = data_buffer | (DP_array[display_index] << 7);
+00032A  210672     MOV #0x1067, W2
+00032C  410000     ADD W2, W0, W0
+00032E  FB8010     ZE [W0], W0
+000330  DD0047     SL W0, #7, W0
+307:               
+308:                 // Send data
+309:                 LATC = data_buffer;
+000332  700001     IOR W0, W1, W0
+000334  887160     MOV W0, LATC
+310:               }
+000336  78014F     MOV [--W15], W2
+000338  BE004F     MOV.D [--W15], W0
+00033A  064000     RETFIE
+311:               
+312:               // ----------------------------------------------
+313:               // Timer 2 interrupt / Keypad acquisition (50 Hz)
+314:               // ----------------------------------------------
+315:               void __attribute__ ((interrupt, no_auto_psv)) _T2Interrupt(void)
+316:               {
+00033C  BE9F80     MOV.D W0, [W15++]
+00033E  BE9F82     MOV.D W2, [W15++]
+317:                 static uint8 column_status_old[4] = {0,0,0,0};
+318:                 uint16 temp = 0;
+319:                 uint8 k = 0;
+320:               
+321:                 // Reset interrupt flag
+322:                 IFS0bits.T2IF = 0;
+000340  A9E800     BCLR IFS0, #7
+323:               
+324:                 // Increment the row index
+325:                 if (current_row == 3)
+000342  BFD050     MOV.B current_row, WREG
+000344  504FE3     SUB.B W0, #0x3, [W15]
+000346  3A0002     BRA NZ, .L7
+326:                 {
+327:                   current_row = 0;
+000348  EF7050     CLR.B current_row
+00034A  370001     BRA .L8
+328:                 }
+329:                 else    
+330:                 {
+331:                   current_row = current_row + 1;
+00034C  EC7050     INC.B current_row
+332:                 }
+333:               
+334:                 // Update the corresponding row outputs
+335:                 ROW_VECTOR = 64 << current_row;
+00034E  BFD050     MOV.B current_row, WREG
+000350  FB8000     ZE W0, W0
+000352  200401     MOV #0x40, W1
+000354  DD0800     SL W1, W0, W0
+000356  8873E0     MOV W0, LATG
+336:               
+337:                 // Wait a bit before sampling
+338:                 // CPU is so fast, I/Os may not be established when 
+339:                 // sampling the columns!
+340:                 // See PORT/LAT difference.
+341:                 for (k = 0; k < 5; k++) {asm("nop");}
+000358  000000     NOP
+00035A  000000     NOP
+00035C  000000     NOP
+00035E  000000     NOP
+000360  000000     NOP
+342:                 
+343:                 // Sample the keypad columns for the current row
+344:                 temp = COLUMN_VECTOR;
+000362  8071F0     MOV PORTD, W0
+345:               
+346:                 column_status = 0;
+000364  EF7051     CLR.B column_status
+347:                 column_status = (temp & 0x0060) >> 5;
+000366  780080     MOV W0, W1
+000368  B20601     AND #0x60, W1
+00036A  DE08C5     LSR W1, #5, W1
+00036C  784181     MOV.B W1, W3
+00036E  210512     MOV #0x1051, W2
+000370  784903     MOV.B W3, [W2]
+348:                 column_status = column_status | ((temp & 0x0100) >> 6);
+000372  B21000     AND #0x100, W0
+000374  DE0046     LSR W0, #6, W0
+000376  B77051     IOR.B column_status
+349:               
+350:                 // Detect change
+351:                 if (column_status_old[current_row] != column_status)
+000378  BFD050     MOV.B current_row, WREG
+00037A  FB8000     ZE W0, W0
+00037C  2150A1     MOV #0x150A, W1
+00037E  408000     ADD W1, W0, W0
+000380  784010     MOV.B [W0], W0
+000382  E35051     CP.B column_status
+000384  32000B     BRA Z, .L6
+352:                 {
+353:                   if (column_status != 0)
+000386  E25051     CP0.B column_status
+000388  320002     BRA Z, .L10
+354:                   {
+355:                     keypad_change = 1;
+00038A  B3C010     MOV.B #0x1, W0
+00038C  B7F052     MOV.B WREG, keypad_change
+356:                   }
+357:                     
+358:                   column_status_old[current_row] = column_status;
+00038E  BFD050     MOV.B current_row, WREG
+000390  FB8000     ZE W0, W0
+000392  2150A1     MOV #0x150A, W1
+000394  408000     ADD W1, W0, W0
+000396  210511     MOV #0x1051, W1
+000398  784091     MOV.B [W1], W1
+00039A  784801     MOV.B W1, [W0]
+359:                 }
+360:               }
+00039C  BE014F     MOV.D [--W15], W2
+00039E  BE004F     MOV.D [--W15], W0
+0003A0  064000     RETFIE
+361:               
+362:               // -------------------------------------------
+363:               // Timer 3 interrupt / ADC acquisition (20 Hz)
+364:               // -------------------------------------------
+365:               void __attribute__ ((interrupt, no_auto_psv)) _T3Interrupt(void)
+366:               {      
+0003A2  781F80     MOV W0, [W15++]
+367:                 // Reset interrupt flag
+368:                 IFS0bits.T3IF = 0;
+0003A4  A90801     BCLR 0x801, #0
+369:               
+370:                 ADC_update = 1;
+0003A6  B3C010     MOV.B #0x1, W0
+0003A8  B7F053     MOV.B WREG, ADC_update
+371:               }
+0003AA  78004F     MOV [--W15], W0
+0003AC  064000     RETFIE
+372:               
+373:               // --------------------------------
+374:               // Timer 4 interrupt / Debug (4 Hz)
+375:               // --------------------------------
+376:               void __attribute__ ((interrupt, no_auto_psv)) _T4Interrupt(void)
+377:               {      
+0003AE  781F80     MOV W0, [W15++]
+378:                 static uint8 counter = 0;
+379:               
+380:                 // Reset interrupt flag
+381:                 IFS1bits.T4IF = 0;
+0003B0  A96803     BCLR 0x803, #3
+382:               
+383:                 debug_update = 1;
+0003B2  B3C010     MOV.B #0x1, W0
+0003B4  B7F054     MOV.B WREG, debug_update
+384:               
+385:                 // Funky "it's alive!" indicator with LED blinking
+386:                 if (counter == 15)
+0003B6  BFD05A     MOV.B counter, WREG
+0003B8  504FEF     SUB.B W0, #0xF, [W15]
+0003BA  3A0003     BRA NZ, .L13
+387:                 {
+388:                   counter = 0;
+0003BC  EF705A     CLR.B counter
+389:                   GREEN_LED = 1;
+0003BE  A80E68     BSET LATF, #0
+0003C0  370003     BRA .L12
+390:                 }
+391:                 else
+392:                 {
+393:                   counter++;
+0003C2  E84000     INC.B W0, W0
+0003C4  B7F05A     MOV.B WREG, counter
+394:                   GREEN_LED = 0;
+0003C6  A90E68     BCLR LATF, #0
+395:                 } 
+396:               }
+0003C8  78004F     MOV [--W15], W0
+0003CA  064000     RETFIE
+397:               
+398:               uint8 keypad_decode(uint8 current_row, uint8 column_status)
+399:               {
+400:                 uint8 key_pressed = 0;
+401:               
+402:                 if (column_status == 1)
+0008EC  50CFE1     SUB.B W1, #0x1, [W15]
+0008EE  3A0004     BRA NZ, .L16
+403:                 {
+404:                   key_pressed = 10 - (3*current_row);
+0008F0  200FD2     MOV #0xFD, W2
+0008F2  B98082     MULW.SS W0, W2, W0
+0008F4  40416A     ADD.B W0, #0xA, W2
+0008F6  37000C     BRA .L17
+405:                 }
+406:                 else if (column_status == 2)
+0008F8  50CFE2     SUB.B W1, #0x2, [W15]
+0008FA  3A0004     BRA NZ, .L18
+407:                 {
+408:                   key_pressed = 11 - (3*current_row);
+0008FC  200FD2     MOV #0xFD, W2
+0008FE  B98082     MULW.SS W0, W2, W0
+000900  40416B     ADD.B W0, #0xB, W2
+000902  370006     BRA .L17
+409:                 }
+410:                 else if (column_status == 4)
+000906  50CFE4     SUB.B W1, #0x4, [W15]
+000908  3A0003     BRA NZ, .L17
+411:                 {
+412:                   key_pressed = 12 - (3*current_row);
+00090A  200FD2     MOV #0xFD, W2
+00090C  B98082     MULW.SS W0, W2, W0
+00090E  40416C     ADD.B W0, #0xC, W2
+413:                 }
+414:                 else
+415:                 {
+416:                   key_pressed = 0;
+000904  EB4100     CLR.B W2
+417:                 }
+418:               
+419:                 return key_pressed;
+420:               }
+000910  784002     MOV.B W2, W0
+000912  060000     RETURN
+421:               
+422:               // -----------------
+423:               // Conv_BCD function
+424:               // -----------------
+425:               // This function updates the display array with the number given as an input.
+426:               // It gives blanking features (blank = 1) for disabling the display of leading zeros.
+427:               void conv_BCD(uint32 number, uint8* p_display_array, uint8 blanking)
+428:               {
+000914  FA002E     LNK #0x2E
+429:                 // Initialize the temporary display array to work on.
+430:                 uint8 temp_array[9] = {0,0,0,0,0,0,0,0,0};
+000916  78018F     MOV W15, W3
+000918  B102E3     SUB #0x2E, W3
+00091A  090003     REPEAT #0x3
+00091C  EB1980     CLR [W3++]
+00091E  EB5980     CLR.B [W3++]
+431:                 uint8 k = 0;
+432:                 volatile uint8 t = 0;
+000920  EB4180     CLR.B W3
+000922  9FDFB3     MOV.B W3, [W15-37]
+433:                 
+434:                 // Constant array
+435:                 const uint32 const_digit[9] = 
+000924  2FFDC4     MOV #0xFFDC, W4
+000926  478204     ADD W15, W4, W4
+000928  283D26     MOV #0x83D2, W6
+00092A  090011     REPEAT #0x11
+00092C  781A36     MOV [W6++], [W4++]
+436:                 {
+437:                   1UL,
+438:                   10UL,
+439:                   100UL,
+440:                   1000UL,
+441:                   10000UL,
+442:                   100000UL,
+443:                   1000000UL,
+444:                   10000000UL,
+445:                   100000000UL,
+446:                 };
+447:                 
+448:                 // Loop on the digits and substract units, tens etc. as many times as it is possible.
+449:                 k = 8;
+450:                 for (k = 8; k >= 0; k--)
+00092E  B3C084     MOV.B #0x8, W4
+000930  37000C     BRA .L24
+000966  E94204     DEC.B W4, W4
+000968  37FFF0     BRA .L24
+451:                 {
+452:                   while (number >= const_digit[k])
+00094A  FB8184     ZE W4, W3
+00094C  DD1AC2     SL W3, #2, W5
+00094E  2FFD26     MOV #0xFFD2, W6
+000950  43030F     ADD W6, W15, W6
+000952  430285     ADD W6, W5, W5
+000954  900355     MOV [W5+10], W6
+000956  9003E5     MOV [W5+12], W7
+000958  500F86     SUB W0, W6, [W15]
+00095A  588F87     SUBB W1, W7, [W15]
+00095C  31FFEA     BRA C, .L22
+453:                   {
+454:                     number -= const_digit[k];
+000932  500006     SUB W0, W6, W0
+000934  588087     SUBB W1, W7, W1
+455:                     temp_array[k]++;
+000936  2FFD26     MOV #0xFFD2, W6
+000938  430303     ADD W6, W3, W6
+00093A  7B42EF     MOV.B [W15+W6], W5
+00093C  E84285     INC.B W5, W5
+00093E  784305     MOV.B W5, W6
+000940  B102E3     SUB #0x2E, W3
+000942  79F786     MOV.B W6, [W15+W3]
+456:                     t++;
+000944  97D9BF     MOV.B [W15-37], W3
+000946  E84183     INC.B W3, W3
+000948  9FDFB3     MOV.B W3, [W15-37]
+457:                   }
+458:                   
+459:                   // Update the current digit
+460:                   *(p_display_array + k) = temp_array[k];
+00095E  410283     ADD W2, W3, W5
+000960  B102E3     SUB #0x2E, W3
+000962  79C1EF     MOV.B [W15+W3], W3
+000964  784A83     MOV.B W3, [W5]
+000966  E94204     DEC.B W4, W4
+000968  37FFF0     BRA .L24
+461:                 }
+462:                 
+463:                 // Blanking procedure
+464:                 if (blanking == 1)
+465:                 {
+466:                   for (k = 8; k >= 0; k--)
+467:                   {
+468:                     // Stop immediatly as soon as a non-zero value is encountered.
+469:                     if (temp_array[k] != 0U)
+470:                     {
+471:                       break;
+472:                     }
+473:               
+474:                     // If char is null, blank it.
+475:                     *(p_display_array + k) = 0;
+476:                   }
+477:                 }
+478:               }
+---  C:/Users/Admin/Documents/Recherche/projet_prime/codes_source/brain_core.X/brain_core/init.c  -------
+1:                 // =============================================================================
+2:                 // File         : init.c
+3:                 // Date         : 03/07/2018
+4:                 // Author       : Quentin
+5:                 // Version      : 01
+6:                 // Description  : main functions required for correct startup
+7:                 // =============================================================================
+8:                 
+9:                 // =============================================================================
+10:                // Includes
+11:                // =============================================================================
+12:                #include <xc.h>
+13:                #include "init.h"
+14:                #include "main.h"
+15:                
+16:                // =============================================================================
+17:                // Defines
+18:                // =============================================================================
+19:                
+20:                // ----------------------
+21:                // IO defines (see p.115)
+22:                // ----------------------
+23:                
+24:                // Latch statut:
+25:                // 0 = output is at 0V
+26:                // 1 = output is at 5V
+27:                
+28:                //                        ---210987--4--10
+29:                #define LATA_INIT       0b0000000000000000
+30:                //                        ---++++++--+--++ LATA reset (9 bits port)
+31:                
+32:                //                        5432109876543210
+33:                #define LATB_INIT       0b0000000000000000
+34:                //                        ++++++++++++++++ PORTB reset (16 bits port)
+35:                
+36:                //                        5-32109876543210
+37:                #define LATC_INIT       0b0000001110000000
+38:                //                        +-++++++++++++++ PORTC reset (15 bits port)
+39:                
+40:                //                        -------8-65-----
+41:                #define LATD_INIT       0b0000000000000000
+42:                //                        -------+-++----- PORTD reset (3 bits port)
+43:                
+44:                //                        5432------------
+45:                #define LATE_INIT       0b0000000000000000
+46:                //                        ++++------------ PORTE reset (4 bits port)
+47:                
+48:                //                        --------------10
+49:                #define LATF_INIT       0b0000000000000000
+50:                //                        --------------++ PORTF reset (2 bits port)
+51:                
+52:                //                        ------9876------
+53:                #define LATG_INIT       0b0000000000000000
+54:                //                        ------++++------ PORTG reset (4 bits port)
+55:                
+56:                // TRIS registers (p.207)
+57:                // 0 = pin is defined as output
+58:                // 1 = pin is defined as input
+59:                // Default state is input
+60:                
+61:                //                         ---210987--4--10
+62:                #define TRISA_INIT       0b0000010000000000
+63:                //                         ---++++++--+--++ TRISA
+64:                
+65:                //                         5432109876543210
+66:                #define TRISB_INIT       0b0000000000000000
+67:                //                         ++++++++++++++++ TRISB
+68:                
+69:                //                         5-32109876543210
+70:                #define TRISC_INIT       0b0000000000000000
+71:                //                         +-++++++++++++++ TRISC
+72:                
+73:                //                         -------8-65-----
+74:                #define TRISD_INIT       0b0000000101100000
+75:                //                         -------+-++----- TRISD
+76:                
+77:                //                         5432------------
+78:                #define TRISE_INIT       0b0000000000000000
+79:                //                         ++++------------ TRISE
+80:                
+81:                //                         --------------10
+82:                #define TRISF_INIT       0b0000000000000000
+83:                //                         --------------++ TRISF
+84:                
+85:                //                         ------9876------
+86:                #define TRISG_INIT       0b0000000000000000
+87:                //                         ------++++------ TRISG
+88:                
+89:                
+90:                // ANSEL registers
+91:                // 0 = pin is defined as digital IO
+92:                // 1 = pin is defined as analog IO
+93:                // Caution!!! default statut is analog for all pins! (p.209)
+94:                //                          ---2109-7--4--10
+95:                #define ANSELA_INIT       0b0000010000000000
+96:                //                          ---++++-+--+--++ ANSELA
+97:                
+98:                //                          ------987---3210
+99:                #define ANSELB_INIT       0b0000000000000000
+100:               //                          ------+++---++++ ANSELB
+101:               
+102:               //                          ---2109876543210
+103:               #define ANSELC_INIT       0b0000000000000000
+104:               //                          ---+++++++++++++ ANSELC
+105:               
+106:               //                          5432------------
+107:               #define ANSELE_INIT       0b0000000000000000
+108:               //                          ++++------------ ANSELE
+109:               
+110:               //                          ------9876------
+111:               #define ANSELG_INIT       0b0000000000000000
+112:               //                          ------++++------ ANSELG
+113:               
+114:               
+115:               
+116:               // =============================================================================
+117:               // User functions
+118:               // =============================================================================
+119:               
+120:               void clock_init(void)
+121:               {
+122:                 // ---------------
+123:                 // Oscillator init
+124:                 // ---------------
+125:                 
+126:                 // Warning:
+127:                 // It is NOT possible to change the PLL configuration while running in PLL 
+128:                 // mode!
+129:                 // The PIC must start with the FRC only, then we set the PLL in software,
+130:                 // and then a clock switch is necessary to run in PLL mode.
+131:                 CLKDIVbits.DOZEN = 0;       // Fcy = Fosc/2
+000728  A96745     BCLR 0x745, #3
+132:                 CLKDIVbits.FRCDIV = 0;      // No postscaler on FRC
+00072A  2F8FF0     MOV #0xF8FF, W0
+00072C  B62744     AND CLKDIV
+133:                 
+134:                 // Clock PLL settings
+135:                 CLKDIVbits.PLLPRE = 0;      // PLL prescaler set at 2
+00072E  2FFE00     MOV #0xFFE0, W0
+000730  B62744     AND CLKDIV
+136:                 PLLFBDbits.PLLDIV = 73;     // PLL feedback set at 75
+000732  2FE000     MOV #0xFE00, W0
+000734  B60746     AND PLLFBD, WREG
+000736  B30490     IOR #0x49, W0
+000738  883A30     MOV W0, PLLFBD
+137:                 CLKDIVbits.PLLPOST = 0;     // PLL postscaler set at 2
+00073A  2FF3F0     MOV #0xFF3F, W0
+00073C  B62744     AND CLKDIV
+138:                 
+139:                 // Thus, Fosc = ((7.37/2) x 75)/2 = 138.18 MHz
+140:                 // Fcy = Fosc/2 = 69 MHz approx. i.e. 69 MIPS :)
+141:                 
+142:                 // Switch to FRC + PLL source
+143:                 __builtin_write_OSCCONH(0x01);              // New source = FRC + PLL
+00073E  2009A1     MOV #0x9A, W1
+000740  200012     MOV #0x1, W2
+000742  200780     MOV #0x78, W0
+000744  207433     MOV #0x743, W3
+000746  784980     MOV.B W0, [W3]
+000748  784981     MOV.B W1, [W3]
+00074A  784982     MOV.B W2, [W3]
+144:                 __builtin_write_OSCCONL(OSCCON | 0x01);     // Send switch request   
+00074C  803A12     MOV OSCCON, W2
+00074E  A00002     BSET W2, #0
+000750  200571     MOV #0x57, W1
+000752  200460     MOV #0x46, W0
+000754  207423     MOV #0x742, W3
+000756  784980     MOV.B W0, [W3]
+000758  784981     MOV.B W1, [W3]
+00075A  784982     MOV.B W2, [W3]
+145:                
+146:                 // Wait for mode switch to be done
+147:                 while (OSCCONbits.COSC != 0b001);
+00075C  270002     MOV #0x7000, W2
+00075E  210001     MOV #0x1000, W1
+000760  803A13     MOV OSCCON, W3
+000762  610003     AND W2, W3, W0
+000764  500F81     SUB W0, W1, [W15]
+000766  3AFFFC     BRA NZ, .L2
+148:                 
+149:                 // Wait for PLL to lock
+150:                 while (OSCCONbits.LOCK != 1);
+000768  200201     MOV #0x20, W1
+00076A  803A12     MOV OSCCON, W2
+00076C  608002     AND W1, W2, W0
+00076E  32FFFD     BRA Z, .L4
+151:               }
+000770  060000     RETURN
+152:               
+153:               void IO_init(void)
+154:               {
+155:                 // I/O value init
+156:                 LATA = LATA_INIT;
+000772  EF2E04     CLR LATA
+157:                 LATB = LATB_INIT;
+000774  EF2E18     CLR LATB
+158:                 LATC = LATC_INIT;
+000776  203800     MOV #0x380, W0
+000778  887160     MOV W0, LATC
+159:                 LATD = LATD_INIT;
+00077A  EF2E40     CLR LATD
+160:                 LATE = LATE_INIT;
+00077C  EF2E54     CLR LATE
+161:                 LATF = LATF_INIT;
+00077E  EF2E68     CLR LATF
+162:                 LATG = LATG_INIT;
+000780  EF2E7C     CLR LATG
+163:                 
+164:                 // I/O mode init (input or output)
+165:                 TRISA = TRISA_INIT;
+000782  B00800     ADD #0x80, W0
+000784  887000     MOV W0, TRISA
+166:                 TRISB = TRISB_INIT;
+000786  EF2E14     CLR TRISB
+167:                 TRISC = TRISC_INIT;
+000788  EF2E28     CLR TRISC
+168:                 TRISD = TRISD_INIT;
+00078A  201601     MOV #0x160, W1
+00078C  8871E1     MOV W1, TRISD
+169:                 TRISE = TRISE_INIT;
+00078E  EF2E50     CLR TRISE
+170:                 TRISF = TRISF_INIT;
+000790  EF2E64     CLR TRISF
+171:                 TRISG = TRISG_INIT;
+000792  EF2E78     CLR TRISG
+172:                 
+173:                 // I/O mode init (analog or digital)
+174:                 ANSELA = ANSELA_INIT;
+000794  887070     MOV W0, ANSELA
+175:                 ANSELB = ANSELB_INIT;
+000796  EF2E22     CLR ANSELB
+176:                 ANSELC = ANSELC_INIT;
+000798  EF2E36     CLR ANSELC
+177:                 ANSELE = ANSELE_INIT;
+00079A  EF2E5E     CLR ANSELE
+178:                 ANSELG = ANSELG_INIT;
+00079C  EF2E86     CLR ANSELG
+179:               }
+00079E  060000     RETURN
+180:               
+181:               // --------------------------------------
+182:               // Timer 1 init / Display MUXing (500 Hz)
+183:               // --------------------------------------
+184:               void timer1_init(void)
+185:               {
+186:                 T1CONbits.TON = 0;          // Turn timer off
+0007A0  A9E105     BCLR 0x105, #7
+187:                 
+188:                 T1CONbits.TSIDL = 0;        // Continue in idle mode
+0007A2  A9A105     BCLR 0x105, #5
+189:                 T1CONbits.TGATE = 0;        // No gated time accumulation
+0007A4  A9C104     BCLR T1CON, #6
+190:                 T1CONbits.TCKPS = 0b10;     // 1:64 prescaler    
+0007A6  2FFCF0     MOV #0xFFCF, W0
+0007A8  B60104     AND T1CON, WREG
+0007AA  A05000     BSET W0, #5
+0007AC  880820     MOV W0, T1CON
+191:                 T1CONbits.TCS = 0;          // Timer source is Tcy (= 69 MHz)
+0007AE  A92104     BCLR T1CON, #1
+192:               
+193:                 TMR1 = 0;                   // Reset timer value
+0007B0  EF2100     CLR TMR1
+194:                 PR1 = 1080;                  // Timer period = 540 => ~ 500 Hz
+0007B2  204380     MOV #0x438, W0
+0007B4  880810     MOV W0, PR1
+195:                 
+196:                 IFS0bits.T1IF = 0;          // Clear interrupt flag
+0007B6  A96800     BCLR IFS0, #3
+197:                 
+198:                 T1CONbits.TON = 1;          // Turn timer on
+0007B8  A8E105     BSET 0x105, #7
+199:               }
+0007BA  060000     RETURN
+200:               
+201:               // -----------------------------------------
+202:               // Timer 2 init / Keypad acquisition (50 Hz)
+203:               // -----------------------------------------
+204:               void timer2_init(void)
+205:               {
+206:                 T2CONbits.TON = 0;          // Turn timer off
+0007BC  A9E111     BCLR 0x111, #7
+207:               
+208:                 T2CONbits.TSIDL = 0;        // Keep running in idle mode
+0007BE  A9A111     BCLR 0x111, #5
+209:                 T2CONbits.TGATE = 0;        // No gated time accumulation
+0007C0  A9C110     BCLR T2CON, #6
+210:                 T2CONbits.TCKPS = 0b11;     // 1:256 prescaler
+0007C2  200300     MOV #0x30, W0
+0007C4  B72110     IOR T2CON
+211:                 T2CONbits.T32 = 0;          // 16 bits mode
+0007C6  A96110     BCLR T2CON, #3
+212:                 T2CONbits.TCS = 0;          // Timer source is Tcy (= 69 MHz)
+0007C8  A92110     BCLR T2CON, #1
+213:               
+214:                 TMR2 = 0;                   // Reset timer value
+0007CA  EF2106     CLR TMR2
+215:                 PR2 = 3455;                 // Timer period = 3455 => ~ 20 kHz
+0007CC  20D7F0     MOV #0xD7F, W0
+0007CE  880860     MOV W0, PR2
+216:               
+217:                 IFS0bits.T2IF = 0;          // Clear interrupt flag
+0007D0  A9E800     BCLR IFS0, #7
+218:               
+219:                 T2CONbits.TON = 1;          // Turn timer on
+0007D2  A8E111     BSET 0x111, #7
+220:               }
+0007D4  060000     RETURN
+221:               
+222:               // ---------------------------------------------
+223:               // Timer 3 init / Debug
+224:               // ---------------------------------------------
+225:               void timer3_init(void)
+226:               {
+227:                 T3CONbits.TON = 0;          // Turn timer off
+0007D6  A9E113     BCLR 0x113, #7
+228:               
+229:                 T3CONbits.TSIDL = 0;        // Keep running in idle mode
+0007D8  A9A113     BCLR 0x113, #5
+230:                 T3CONbits.TGATE = 0;        // No gated time accumulation
+0007DA  A9C112     BCLR T3CON, #6
+231:                 T3CONbits.TCKPS = 0b11;     // 1:256 prescaler  
+0007DC  200300     MOV #0x30, W0
+0007DE  B72112     IOR T3CON
+232:                 T3CONbits.TCS = 0;          // Timer source is Tcy (= 69 MHz)
+0007E0  A92112     BCLR T3CON, #1
+233:               
+234:                 TMR3 = 0;                   // Reset timer value
+0007E2  EF210A     CLR TMR3
+235:                 PR3 = 65535;                // Timer period = 65536 => ~ 4.11 Hz
+0007E4  EFA10E     SETM PR3
+236:               
+237:                 IFS0bits.T3IF = 0;          // Clear interrupt flag
+0007E6  A90801     BCLR 0x801, #0
+238:               
+239:                 T3CONbits.TON = 1;          // Turn timer on
+0007E8  A8E113     BSET 0x113, #7
+240:               }
+0007EA  060000     RETURN
+241:               
+242:               // --------------------------------------
+243:               // Timer 4 init / ADC acquisition (20 Hz)
+244:               // --------------------------------------
+245:               void timer4_init(void)
+246:               {
+247:                 T4CONbits.TON = 0;          // Turn timer off
+0007EC  A9E11F     BCLR 0x11F, #7
+248:               
+249:                 T4CONbits.TSIDL = 0;        // Keep running in idle mode
+0007EE  A9A11F     BCLR 0x11F, #5
+250:                 T4CONbits.TGATE = 0;        // No gated time accumulation
+0007F0  A9C11E     BCLR T4CON, #6
+251:                 T4CONbits.TCKPS = 0b11;     // 1:256 prescaler  
+0007F2  200300     MOV #0x30, W0
+0007F4  B7211E     IOR T4CON
+252:                 T4CONbits.TCS = 0;          // Timer source is Tcy (= 69 MHz)
+0007F6  A9211E     BCLR T4CON, #1
+253:               
+254:                 TMR4 = 0;                   // Reset timer value
+0007F8  EF2114     CLR TMR4
+255:                 PR4 = 13495;                // Timer period = 13495 => ~ 20 Hz
+0007FA  234B70     MOV #0x34B7, W0
+0007FC  8808D0     MOV W0, PR4
+256:               
+257:                 IFS1bits.T4IF = 0;          // Clear interrupt flag
+0007FE  A96803     BCLR 0x803, #3
+258:               
+259:                 T4CONbits.TON = 1;          // Turn timer on
+000800  A8E11F     BSET 0x11F, #7
+260:               }
+000802  060000     RETURN
+261:               
+262:               // --------
+263:               // PWM init
+264:               // --------
+265:               void PWM_init(void)
+266:               {
+267:                 // Set PWM period to about 2.1 kHz
+268:                 PTPER = 65535;
+000804  EFAC04     SETM PTPER
+269:                 
+270:                 // Set phase shift
+271:                 PHASE1 = 0;
+000806  EF2C28     CLR PHASE1
+272:                 PHASE2 = 0;
+000808  EF2C48     CLR PHASE2
+273:                 PHASE3 = 0;
+00080A  EF2C68     CLR PHASE3
+274:               
+275:                 // Set duty cycle
+276:                 PDC1 = 100;
+00080C  200640     MOV #0x64, W0
+00080E  886130     MOV W0, PDC1
+277:                 PDC2 = 300;
+000810  2012C0     MOV #0x12C, W0
+000812  886230     MOV W0, PDC2
+278:                 PDC3 = 500;
+000814  201F40     MOV #0x1F4, W0
+000816  886330     MOV W0, PDC3
+279:               
+280:                 // Set Dead Time Values 
+281:                 DTR1 = 0;
+000818  EF2C2A     CLR DTR1
+282:                 DTR2 = 0;
+00081A  EF2C4A     CLR DTR2
+283:                 DTR3 = 0;
+00081C  EF2C6A     CLR DTR3
+284:                 
+285:                 // Set Dead Time alternate Values 
+286:                 ALTDTR1 = 0;
+00081E  EF2C2C     CLR ALTDTR1
+287:                 ALTDTR2 = 0;
+000820  EF2C4C     CLR ALTDTR2
+288:                 ALTDTR3 = 0;
+000822  EF2C6C     CLR ALTDTR3
+289:                 
+290:                 // Set PWM Mode to Independent and assign PWM I/Os
+291:                 IOCON1 = 0xCC00;
+000824  2CC000     MOV #0xCC00, W0
+000826  886110     MOV W0, IOCON1
+292:                 IOCON2 = 0xCC00;
+000828  886210     MOV W0, IOCON2
+293:                 IOCON3 = 0xCC00;
+00082A  886310     MOV W0, IOCON3
+294:                 
+295:                 // Set Primary Time Base, Edge-Aligned Mode and Independent Duty Cycles
+296:                 PWMCON1 = 0x0000;
+00082C  EF2C20     CLR PWMCON1
+297:                 PWMCON2 = 0x0000;
+00082E  EF2C40     CLR PWMCON2
+298:                 PWMCON3 = 0x0000;
+000830  EF2C60     CLR PWMCON3
+299:                 
+300:                 // No fault detection
+301:                 FCLCON1 = 0x0003;
+000832  200030     MOV #0x3, W0
+000834  886120     MOV W0, FCLCON1
+302:                 FCLCON2 = 0x0003;
+000836  886220     MOV W0, FCLCON2
+303:                 FCLCON3 = 0x0003;
+000838  886320     MOV W0, FCLCON3
+304:                 
+305:                 // 1:1 Prescaler 
+306:                 PTCON2 = 0x0000;
+00083A  EF2C02     CLR PTCON2
+307:                 
+308:                 // Enable PWM Module
+309:                 PTCON = 0x8000;
+00083C  280000     MOV #0x8000, W0
+00083E  886000     MOV W0, PTCON
+310:               }
+000840  060000     RETURN
+311:               
+312:               // --------------------
+313:               // ADC init (see p.285)
+314:               // --------------------
+315:               void ADC_init(void)
+316:               {
+317:                 // ADxCON1 register
+318:                 AD1CON1bits.ADSIDL = 0;         // Keep operating in idle mode
+000842  A9A321     BCLR 0x321, #5
+319:                 AD1CON1bits.ADDMABM = 0;        // DMA mode. Do not care
+000844  A98321     BCLR 0x321, #4
+320:                 AD1CON1bits.AD12B = 0;          // 4 channels modes, 10 bits
+000846  A94321     BCLR 0x321, #2
+321:                 AD1CON1bits.FORM = 0b00;        // Output format is integer
+000848  2FCFF0     MOV #0xFCFF, W0
+00084A  B62320     AND AD1CON1
+322:                 
+323:                 AD1CON1bits.ASAM = 0;           // Start conversion when SAMP is set
+00084C  A94320     BCLR AD1CON1, #2
+324:                 AD1CON1bits.SSRCG = 0;          // Select sample clock source group 0
+00084E  A98320     BCLR AD1CON1, #4
+325:                 AD1CON1bits.SSRC = 0b111;       // Auto-convert after sampling
+000850  200E00     MOV #0xE0, W0
+000852  B72320     IOR AD1CON1
+326:                 
+327:                 AD1CON1bits.SIMSAM = 1;         // 4 simultaneous channels sampling mode
+000854  A86320     BSET AD1CON1, #3
+328:                 
+329:                 // ADxCON2 register
+330:                 AD1CON2bits.VCFG = 0;           // ADC references are the supplies 
+000856  21FFF0     MOV #0x1FFF, W0
+000858  B62322     AND AD1CON2
+331:                 AD1CON2bits.CSCNA = 0;          // No input scanning
+00085A  A94323     BCLR 0x323, #2
+332:                 AD1CON2bits.CHPS = 0b11;        // Sample all the 4 channels
+00085C  203000     MOV #0x300, W0
+00085E  B72322     IOR AD1CON2
+333:                 AD1CON2bits.SMPI = 0;           // Generate interrupt at the end of every acquisition
+000860  2FF830     MOV #0xFF83, W0
+000862  B62322     AND AD1CON2
+334:                                                 // (= 4 samples/interrupt, since 4 channels are acquired simultaneously)
+335:                 AD1CON2bits.BUFM = 0;           // Fill buffer every time from start address
+000864  A92322     BCLR AD1CON2, #1
+336:                 AD1CON2bits.ALTS = 0;           // Always route signals on MUX A
+000866  A90322     BCLR AD1CON2, #0
+337:                 
+338:                 // ADxCON3 register
+339:                 // Warning: TAD must be greater than 75 ns (see Electrical AC charac.)
+340:                 AD1CON3bits.ADRC = 0;           // Clock source is system clock
+000868  A9E325     BCLR 0x325, #7
+341:                 AD1CON3bits.SAMC = 31;          // Sample time = 31 x TAD = 4.5 µs
+00086A  21F000     MOV #0x1F00, W0
+00086C  B72324     IOR AD1CON3
+342:                 AD1CON3bits.ADCS = 9;           // TAD = (9+1) x Tcy = 145 ns > 75 ns (min TAD)
+00086E  B3C090     MOV.B #0x9, W0
+000870  B7E324     MOV.B WREG, AD1CON3
+343:                 
+344:                 // ADxCON4 register
+345:                 AD1CON4bits.ADDMAEN = 0;        // No DMA is used
+000872  A90333     BCLR 0x333, #0
+346:                 
+347:                 // ADC channel 0 config
+348:                 AD1CHS0bits.CH0NA = 0;          // Negative reference is GND
+000874  A9E328     BCLR AD1CHS0, #7
+349:                 AD1CHS0bits.CH0SA = 56;         // AN56 is routed on Channel 0
+000876  2FFC00     MOV #0xFFC0, W0
+000878  B60328     AND AD1CHS0, WREG
+00087A  B30380     IOR #0x38, W0
+00087C  881940     MOV W0, AD1CHS0
+350:                 
+351:                 // ADC channel 1-2-3 config
+352:                 AD1CHS123bits.CH123NA = 0;      // Negative reference is GND
+00087E  2FFF90     MOV #0xFFF9, W0
+000880  B62326     AND AD1CHS123
+353:                 AD1CHS123bits.CH123SA2 = 0;     //
+000882  A98326     BCLR AD1CHS123, #4
+354:                 AD1CHS123bits.CH123SA1 = 0;     // AN0 is routed on Channel 1
+000884  A96326     BCLR AD1CHS123, #3
+355:                 AD1CHS123bits.CH123SA0 = 0;     //
+000886  A90326     BCLR AD1CHS123, #0
+356:                 
+357:                 // Start ADC module
+358:                 AD1CON1bits.ADON = 1; 
+000888  A8E321     BSET 0x321, #7
+359:               }
+00088A  060000     RETURN
+360:               
+361:               void interrupts_init(void)
+362:               {
+363:                 // See p.129 & especially "Interrupts" section in the family ref. manual p.6-26 "Code example"
+364:                 // IFSO: flags registers
+365:                 // IECO: interrupt enable registers
+366:                 // IPC: priority bits
+367:                 
+368:                 // Interrupts settings
+369:                 INTCON2bits.GIE = 0;        // Disable all interrupts
+00088C  A9E8C3     BCLR 0x8C3, #7
+370:                 INTCON1bits.NSTDIS = 0;     // Interrupts nesting enabled
+00088E  A9E8C1     BCLR 0x8C1, #7
+371:                 
+372:                 // Timer 1
+373:                 IFS0bits.T1IF = 0;          // Clear TIMER1 interrupt flag
+000890  A96800     BCLR IFS0, #3
+374:                 IPC0bits.T1IP = 5;          // Priority level is set at 5
+000892  28FFF0     MOV #0x8FFF, W0
+000894  804201     MOV IPC0, W1
+000896  600101     AND W0, W1, W2
+000898  250001     MOV #0x5000, W1
+00089A  708082     IOR W1, W2, W1
+00089C  884201     MOV W1, IPC0
+375:                 IEC0bits.T1IE = 1;          // Interrupts enabled
+00089E  A86820     BSET IEC0, #3
+376:                 
+377:                 // Timer 2
+378:                 IFS0bits.T2IF = 0;          // Clear TIMER2 interrupt flag
+0008A0  A9E800     BCLR IFS0, #7
+379:                 IPC1bits.T2IP = 4;          // Priority level is set at 4
+0008A2  804212     MOV IPC1, W2
+0008A4  600082     AND W0, W2, W1
+0008A6  A0E001     BSET W1, #14
+0008A8  884211     MOV W1, IPC1
+380:                 IEC0bits.T2IE = 1;          // Interrupts enabled
+0008AA  A8E820     BSET IEC0, #7
+381:                 
+382:                 // Timer 3
+383:                 IFS0bits.T3IF = 0;          // Clear TIMER3 interrupt flag
+0008AC  A90801     BCLR 0x801, #0
+384:                 IPC2bits.T3IP = 3;          // Priority level is set at 3
+0008AE  2FFF81     MOV #0xFFF8, W1
+0008B0  804223     MOV IPC2, W3
+0008B2  608103     AND W1, W3, W2
+0008B4  B30032     IOR #0x3, W2
+0008B6  884222     MOV W2, IPC2
+385:                 IEC0bits.T3IE = 1;          // Interrupts enabled
+0008B8  A80821     BSET 0x821, #0
+386:               
+387:                 // Timer 4
+388:                 IFS1bits.T4IF = 0;          // Clear TIMER4 interrupt flag
+0008BA  A96803     BCLR 0x803, #3
+389:                 IPC6bits.T4IP = 2;          // Priority level is set at 2
+0008BC  804263     MOV IPC6, W3
+0008BE  600103     AND W0, W3, W2
+0008C0  A0D002     BSET W2, #13
+0008C2  884262     MOV W2, IPC6
+390:                 IEC1bits.T4IE = 1;          // Interrupts enabled
+0008C4  A86823     BSET 0x823, #3
+391:               
+392:                 // SPI
+393:                 IFS0bits.SPI1IF = 0;        // Clear SPI1 interrupt flag
+0008C6  A94801     BCLR 0x801, #2
+394:                 IPC3bits.U1TXIP = 3;        // Priority level is set at 0
+0008C8  804233     MOV IPC3, W3
+0008CA  608103     AND W1, W3, W2
+0008CC  B30032     IOR #0x3, W2
+0008CE  884232     MOV W2, IPC3
+395:                 IEC0bits.SPI1IE = 0;        // Interrupts disabled
+0008D0  A94821     BCLR 0x821, #2
+396:                 
+397:                 // UART
+398:                 IFS0bits.U1RXIF = 0;        // Clear UART1 RX interrupt flag
+0008D2  A96801     BCLR 0x801, #3
+399:                 IPC2bits.U1RXIP = 3;        // Priority level is set at 1    
+0008D4  B60844     AND IPC2, WREG
+0008D6  230002     MOV #0x3000, W2
+0008D8  710100     IOR W2, W0, W2
+0008DA  884222     MOV W2, IPC2
+400:                 IEC0bits.U1RXIE = 0;        // Interrupts enabled   
+0008DC  A96821     BCLR 0x821, #3
+401:                 
+402:                 IFS0bits.U1TXIF = 0;        // Clear UART1 TX interrupt flag
+0008DE  A98801     BCLR 0x801, #4
+403:                 IPC3bits.U1TXIP = 0;        // Priority level is set at 0
+0008E0  208460     MOV #0x846, W0
+0008E2  608810     AND W1, [W0], [W0]
+404:                 IEC0bits.U1TXIE = 0;        // Interrupts disabled
+0008E4  A98821     BCLR 0x821, #4
+405:               }
+0008E6  060000     RETURN
+406:               
+407:               void interrupts_enable(void)
+408:               {
+409:                 INTCON2bits.GIE = 1;
+0008E8  A8E8C3     BSET 0x8C3, #7
+410:               }
+0008EA  060000     RETURN
+---  C:/Users/Admin/Documents/Recherche/projet_prime/codes_source/brain_core.X/brain_core/Q_div.s  ------
+                                                  1:     ; ===============
+                                                  2:     ; Q_div function
+                                                  3:     ; ===============
+                                                  4:     ; Assembly function performing unsigned integer division on 16 bits words.
+                                                  5:     .global _Q_div
+                                                  6:         
+                                                  7:     _Q_div:
+000A18  780280     MOV W0, W5                     8:         MOV W0,W5		; Save dividend pointer
+000A1A  780301     MOV W1, W6                     9:     	MOV W1,W6		; Save divider pointer
+000A1C  780110     MOV [W0], W2                   10:        MOV [W0],W2		; Dereference dividend pointer to W2
+000A1E  780191     MOV [W1], W3                   11:        MOV [W1],W3		; Dereference divider pointer to W3
+000A20  090011     REPEAT #0x11                   12:        REPEAT #17
+000A22  D88103     DIV.UW W2, W3                  13:        DIV.U W2,W3		; Divide W2 by W3
+000A24  780A80     MOV W0, [W5]                   14:        MOV W0,[W5]		; Move quotient at the dividend address
+000A26  780B01     MOV W1, [W6]                   15:        MOV W1,[W6]		; Move remainder at the divider address
+000A28  060000     RETURN                         16:        return
+                                                  17:        .end
+                                                  18:        
